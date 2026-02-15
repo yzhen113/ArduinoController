@@ -8,6 +8,7 @@
  *   LCD GND -> GND
  *   LCD SDA -> ESP32 SDA (e.g. GPIO 21 on ESP32 Dev, or default I2C on Nano ESP32)
  *   LCD SCL -> ESP32 SCL (e.g. GPIO 22 on ESP32 Dev)
+ *   LED (alive indicator) -> D2 (GPIO 2), other leg -> GND (use 330R if needed)
  *
  * Libraries: WiFi, WiFiUdp, LiquidCrystal_I2C (install via Arduino Library Manager)
  */
@@ -32,6 +33,9 @@ char packetBuffer[64];
 #define LCD_ROWS     2
 LiquidCrystal_I2C lcd(LCD_I2C_ADDR, LCD_COLS, LCD_ROWS);
 
+// ----- LED (alive indicator on D2) -----
+#define LED_PIN 2   // D2 on ESP32 Nano
+
 // ----- Game state (from Unity) -----
 int   gems  = 0;
 bool  alive = true;
@@ -40,6 +44,10 @@ bool  lcdReady = false;
 
 void setup() {
   Serial.begin(9600);
+
+  // LED (alive indicator)
+  pinMode(LED_PIN, OUTPUT);
+  digitalWrite(LED_PIN, LOW);
 
   // LCD init
   Wire.begin();  // default SDA/SCL on your board
@@ -112,7 +120,9 @@ void updateDisplay() {
   lcd.setCursor(0, 1);
   if (alive) {
     lcd.print("Status: ALIVE ");
+    digitalWrite(LED_PIN, HIGH);
   } else {
     lcd.print("Status: DEAD  ");
+    digitalWrite(LED_PIN, LOW);
   }
 }
